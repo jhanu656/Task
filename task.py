@@ -5,7 +5,8 @@ app = Flask(__name__)
 # ---------------- In-memory "DB" ----------------
 users = []
 posts = []
-
+comments = []
+todos = []
 
 # ---------------- Helper Functions ----------------
 def get_next_id(data):
@@ -47,6 +48,7 @@ def create_user():
         return jsonify({"error": "Internal Server Error", "message": str(e)}), 500
 
 # ---------------- Posts ----------------
+
 
 @app.route("/posts", methods=["GET"])
 def get_posts():
@@ -126,6 +128,93 @@ def delete_post(post_id):
     posts = [p for p in posts if p["id"] != post_id]
     return jsonify({"message": "Post deleted"}), 200
 
+# ---------------- Comments ----------------
+
+
+@app.route("/comments", methods=["GET"])
+def get_comments():
+    try:
+        post_id = request.args.get("postId", type=int)
+        if post_id:
+            if not find_by_id(posts, post_id):
+                return jsonify({"error": "Post not found"}), 404
+            filtered_comments = [c for c in comments if c.get("postId") == post_id]
+            return jsonify(filtered_comments), 200
+        return jsonify(comments), 200
+    except Exception as e:
+        return jsonify({"error": "Internal Server Error", "message": str(e)}), 500
+
+
+@app.route("/comments", methods=["POST"])
+def create_comment():
+    try:
+        data = request.get_json()
+
+        if not data:
+            return jsonify({"error": "No data provided"}), 400
+
+        required_fields = ["postId", "name", "email", "body"]
+        for field in required_fields:
+            if field not in data:
+                return jsonify({"error": f"Missing field: {field}"}), 400
+
+        if not find_by_id(posts, data["postId"]):
+            return jsonify({"error": "Invalid postId"}), 400
+
+        # Prevent duplicate comment by email on the same post
+        if any(c["postId"] == data["postId"] and c["email"] == data["email"] and c["body"] == data["body"] for c in comments):
+            return jsonify({"error": "Duplicate comment by same email on this post"}), 409
+
+        data["id"] = get_next_id(comments)
+        comments.append(data)
+        return jsonify(data), 201
+
+    except Exception as e:
+        return jsonify({"error": "Internal Server Error", "message": str(e)}), 500
+
+# ---------------- Todos ----------------
+
+@app.route("/todos", methods=["GET"])
+def get_todos():
+    try:
+        user_id = request.args.get("userId", type=int)
+        if user_id:
+            if not find_by_id(users, user_id):
+                return jsonify({"error": "User not found"}), 404
+            user_todos = [t for t in todos if t.get("userId") == user_id]
+            return jsonify(user_todos), 200
+        return jsonify(todos), 200
+    except Exception as e:
+        return jsonify({"error": "Internal Server Error", "message": str(e)}), 500
+
+
+@app.route("/todos", methods=["POST"])
+def create_todo():
+    try:
+        data = request.get_json()
+
+        if not data:
+            return jsonify({"error": "No data provided"}), 400
+
+        required_fields = ["userId", "title"]
+        for field in required_fields:
+            if field not in data:
+                return jsonify({"error": f"Missing field: {field}"}), 400
+
+        if not find_by_id(users, data["userId"]):
+            return jsonify({"error": "Invalid userId"}), 400
+
+        # Optional: Prevent duplicate title for the same user
+        if any(t["userId"] == data["userId"] and t["title"] == data["title"] for t in todos):
+            return jsonify({"error": "Todo with this title already exists for this user"}), 409
+
+        data["id"] = get_next_id(todos)
+        data.setdefault("completed", False)
+        todos.append(data)
+        return jsonify(data), 201
+
+    except Exception as e:
+        return jsonify({"error": "Internal Server Error", "message": str(e)}), 500
 
 # ---------------- App Runner ----------------
 
