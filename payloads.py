@@ -1,31 +1,31 @@
-#users
-{
-  "name": "Jhanu",
-  "email": "jhanu@example.com"
-}
+# #users
+# {
+#   "name": "Jhanu",
+#   "email": "jhanu@example.com"
+# }
 
 
-# posts
-{
-  "userId": 1,
-  "title": "Hello Flask!",
-  "body": "This is a sample post."
-}
+# # posts
+# {
+#   "userId": 1,
+#   "title": "Hello Flask!",
+#   "body": "This is a sample post."
+# }
 
-# comments
+# # comments
 
-{
-  "postId": 1,
-  "name": "Alice",
-  "body": "Nice post!",
-  "email": "alice@example.com"
-}
+# {
+#   "postId": 1,
+#   "name": "Alice",
+#   "body": "Nice post!",
+#   "email": "alice@example.com"
+# }
 
-# todos
+# # todos
 
-{
-  "userId": 1,
-  "title": "Learn Flask",
-  "completed": false
-}
+# {
+#   "userId": 1,
+#   "title": "Learn Flask",
+#   "completed": false
+# }
 
