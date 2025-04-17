@@ -13,11 +13,28 @@ def client():
         app.todos.clear()
         yield client
 
-# ---------------- Users ----------------
+# ---------------- Users --------------------------------
 def test_create_user(client):
-    res = client.post("/users", json={"name": "Alice", "email": "alice@example.com"})
-    assert res.status_code == 201
-    assert res.get_json()["name"] == "Alice"
+    # Create the first user
+    res1 = client.post("/users", json={"name": "Alice", "email": "alice@example.com"})
+    assert res1.status_code == 201
+    user1 = res1.get_json()
+    assert user1["name"] == "Alice"
+    assert user1["email"] == "alice@example.com"
+    assert "id" in user1  
+    assert user1["id"] == app.users[0]["id"]  
+
+    # Create the second user
+    res2 = client.post("/users", json={"name": "Bob", "email": "bob@example.com"})
+    assert res2.status_code == 201
+    user2 = res2.get_json()
+    assert user2["name"] == "Bob"
+    assert user2["email"] == "bob@example.com"
+    assert "id" in user2 
+    assert user2["id"] == app.users[1]["id"]  
+
+    # Verify the IDs are sequential
+    assert user2["id"] == user1["id"] + 1
 
 def test_create_user_missing_field(client):
     res = client.post("/users", json={"name": "Alice"})
@@ -143,3 +160,8 @@ def test_get_todos(client):
 def test_delete_todo_not_found(client):
     res = client.delete("/todos/99")
     assert res.status_code == 404
+
+
+
+
+
